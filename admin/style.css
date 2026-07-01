@@ -297,6 +297,14 @@ input[readonly] { opacity: 0.75; }
   color: var(--accent2);
 }
 
+.sub-rules-box textarea {
+  flex: 1;
+  min-height: 52px;
+  font-size: 0.85rem;
+  font-family: ui-monospace, monospace;
+  resize: vertical;
+}
+
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 
 .progress {

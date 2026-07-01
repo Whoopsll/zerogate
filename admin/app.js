@@ -100,9 +100,11 @@
 
   function subCard(i) {
     const pct = Math.min(100, parseFloat(i.percent) || 0);
-    const urls = i.subUrls || { default: i.subUrl, clash: i.subUrl + '&format=clash', v2rayn: i.subUrl + '&format=clash', shadowrocket: i.subUrl + '&format=shadowrocket' };
+    const urls = i.subUrls || { default: i.subUrl, clash: i.subUrl + '&format=clash', v2rayn: i.subUrl, rules: i.subUrl + '&format=rules', shadowrocket: i.subUrl + '&format=shadowrocket' };
     const urlJson = esc(JSON.stringify(urls));
     const initialUrl = urls.default || i.subUrl;
+    const rules = Array.isArray(i.routingRules) ? i.routingRules : [];
+    const rulesText = rules.length ? rules.join('\n') : '192.168.100.0/24';
     return '<div class="card" data-id="' + esc(i.id) + '">'
       + '<div class="card-head">'
       + '<div><div class="card-title">' + esc(i.name) + '</div>'
@@ -112,14 +114,18 @@
       + '<div class="progress"><span style="width:' + pct + '%"></span></div>'
       + '<div class="sub-format-row">'
       + '<button type="button" class="btn secondary sm sub-format active" data-format="default">通用</button>'
-      + '<button type="button" class="btn secondary sm sub-format" data-format="clash">Clash</button>'
       + '<button type="button" class="btn secondary sm sub-format" data-format="v2rayn">v2rayN</button>'
       + '<button type="button" class="btn secondary sm sub-format" data-format="shadowrocket">Shadowrocket</button>'
+      + '<button type="button" class="btn secondary sm sub-format" data-format="clash">Clash</button>'
       + '</div>'
-      + '<p class="muted sub-format-hint" style="margin:6px 0 8px;font-size:0.78rem">内网穿透请用 Clash / v2rayN / Shadowrocket（自带 Agent 白名单路由）</p>'
+      + '<p class="muted sub-format-hint" style="margin:6px 0 8px;font-size:0.78rem">通用：单节点 vless，不含内网路由</p>'
       + '<div class="copy-row"><input class="sub-url-input" readonly value="' + esc(initialUrl) + '" data-sub-urls="' + urlJson + '">'
       + '<button type="button" class="btn secondary sm sub-qrcode">二维码</button>'
       + '<button type="button" class="btn secondary sm copy-btn sub-copy">复制</button></div>'
+      + '<div class="sub-rules-box hidden">'
+      + '<p class="muted" style="margin:8px 0 4px;font-size:0.78rem">v2rayN 内网路由（设置 → 路由设置 → 添加 IP-CIDR → 出站 proxy，放在最前）：</p>'
+      + '<div class="copy-row"><textarea class="sub-rules-text" readonly rows="' + Math.max(2, rules.length) + '">' + esc(rulesText) + '</textarea>'
+      + '<button type="button" class="btn secondary sm copy-rules">复制</button></div></div>'
       + '<p class="muted" style="margin-top:8px;font-size:0.8rem">UUID: ' + esc(i.uuid) + ' · 账期 ' + esc(i.month) + '</p>'
       + '<div class="actions">'
       + '<button type="button" class="btn secondary sm sub-toggle" data-id="' + esc(i.id) + '" data-en="' + (!i.enabled) + '">' + (i.enabled ? '停用' : '启用') + '</button>'
@@ -145,13 +151,15 @@
       btn.classList.toggle('active', btn.dataset.format === format);
     });
     const hints = {
-      default: '通用：单节点 vless，不含内网路由',
-      clash: 'Clash：含内网路由（来自 Agent 白名单），Surge/Stash 也可导入',
-      v2rayn: 'v2rayN：导入 Clash 订阅 + 开启 TUN',
+      default: '通用：单节点 vless，显示为 VLESS · 443 · ws（仅翻墙，不含内网路由）',
+      v2rayn: 'v2rayN：① 用下方链接更新订阅（正常节点）② 按内网路由框添加 IP-CIDR 规则 ③ 开 TUN',
+      clash: 'Clash：整包自定义配置（类型 Custom），含内网路由',
       shadowrocket: 'Shadowrocket：含 [Rule] 内网路由，更新订阅即可'
     };
     const hint = card.querySelector('.sub-format-hint');
     if (hint) hint.textContent = hints[format] || hints.default;
+    const rulesBox = card.querySelector('.sub-rules-box');
+    if (rulesBox) rulesBox.classList.toggle('hidden', format !== 'v2rayn');
   }
 
   async function loadSubs() {
@@ -205,6 +213,12 @@
         const url = getSubUrlFromCard(card);
         await navigator.clipboard.writeText(url);
         toast('已复制');
+        return;
+      }
+      if (t.classList.contains('copy-rules')) {
+        const ta = card.querySelector('.sub-rules-text');
+        if (ta) await navigator.clipboard.writeText(ta.value);
+        toast('路由规则已复制');
         return;
       }
       if (t.classList.contains('sub-qrcode')) {
