@@ -284,6 +284,19 @@ input[readonly] { opacity: 0.75; }
 
 .copy-row input { flex: 1; font-size: 0.85rem; }
 
+.sub-format-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.sub-format.active {
+  background: rgba(246,130,31,.2);
+  border-color: rgba(246,130,31,.45);
+  color: var(--accent2);
+}
+
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 
 .progress {

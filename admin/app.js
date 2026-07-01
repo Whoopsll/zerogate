@@ -100,6 +100,9 @@
 
   function subCard(i) {
     const pct = Math.min(100, parseFloat(i.percent) || 0);
+    const urls = i.subUrls || { default: i.subUrl, clash: i.subUrl + '&format=clash', v2rayn: i.subUrl + '&format=clash', shadowrocket: i.subUrl + '&format=shadowrocket' };
+    const urlJson = esc(JSON.stringify(urls));
+    const initialUrl = urls.default || i.subUrl;
     return '<div class="card" data-id="' + esc(i.id) + '">'
       + '<div class="card-head">'
       + '<div><div class="card-title">' + esc(i.name) + '</div>'
@@ -107,9 +110,16 @@
       + '<div class="muted">↑' + esc(i.uploadGB) + ' ↓' + esc(i.downloadGB) + ' / ' + esc(i.quotaGB) + ' GB</div>'
       + '</div>'
       + '<div class="progress"><span style="width:' + pct + '%"></span></div>'
-      + '<div class="copy-row"><input readonly value="' + esc(i.subUrl) + '">'
-      + '<button type="button" class="btn secondary sm sub-qrcode" data-url="' + esc(i.subUrl) + '">二维码</button>'
-      + '<button type="button" class="btn secondary sm copy-btn" data-url="' + esc(i.subUrl) + '">复制</button></div>'
+      + '<div class="sub-format-row">'
+      + '<button type="button" class="btn secondary sm sub-format active" data-format="default">通用</button>'
+      + '<button type="button" class="btn secondary sm sub-format" data-format="clash">Clash</button>'
+      + '<button type="button" class="btn secondary sm sub-format" data-format="v2rayn">v2rayN</button>'
+      + '<button type="button" class="btn secondary sm sub-format" data-format="shadowrocket">Shadowrocket</button>'
+      + '</div>'
+      + '<p class="muted sub-format-hint" style="margin:6px 0 8px;font-size:0.78rem">内网穿透请用 Clash / v2rayN / Shadowrocket（自带 Agent 白名单路由）</p>'
+      + '<div class="copy-row"><input class="sub-url-input" readonly value="' + esc(initialUrl) + '" data-sub-urls="' + urlJson + '">'
+      + '<button type="button" class="btn secondary sm sub-qrcode">二维码</button>'
+      + '<button type="button" class="btn secondary sm copy-btn sub-copy">复制</button></div>'
       + '<p class="muted" style="margin-top:8px;font-size:0.8rem">UUID: ' + esc(i.uuid) + ' · 账期 ' + esc(i.month) + '</p>'
       + '<div class="actions">'
       + '<button type="button" class="btn secondary sm sub-toggle" data-id="' + esc(i.id) + '" data-en="' + (!i.enabled) + '">' + (i.enabled ? '停用' : '启用') + '</button>'
@@ -117,6 +127,31 @@
       + '<button type="button" class="btn secondary sm sub-quota" data-id="' + esc(i.id) + '" data-q="' + i.quotaGB + '">改配额</button>'
       + '<button type="button" class="btn danger sm sub-del" data-id="' + esc(i.id) + '">删除</button>'
       + '</div></div>';
+  }
+
+  function getSubUrlFromCard(card) {
+    const input = card && card.querySelector('.sub-url-input');
+    return input ? input.value : '';
+  }
+
+  function setSubFormat(card, format) {
+    const input = card.querySelector('.sub-url-input');
+    if (!input) return;
+    let urls = {};
+    try { urls = JSON.parse(input.dataset.subUrls || '{}'); } catch (_) { }
+    const url = urls[format] || urls.default || input.value;
+    input.value = url;
+    card.querySelectorAll('.sub-format').forEach(function (btn) {
+      btn.classList.toggle('active', btn.dataset.format === format);
+    });
+    const hints = {
+      default: '通用：单节点 vless，不含内网路由',
+      clash: 'Clash：含内网路由（来自 Agent 白名单），Surge/Stash 也可导入',
+      v2rayn: 'v2rayN：导入 Clash 订阅 + 开启 TUN',
+      shadowrocket: 'Shadowrocket：含 [Rule] 内网路由，更新订阅即可'
+    };
+    const hint = card.querySelector('.sub-format-hint');
+    if (hint) hint.textContent = hints[format] || hints.default;
   }
 
   async function loadSubs() {
@@ -159,15 +194,21 @@
   document.getElementById('subList').addEventListener('click', async function (e) {
     const t = e.target.closest('button');
     if (!t) return;
+    const card = t.closest('.card');
     const id = t.dataset.id;
     try {
-      if (t.classList.contains('copy-btn')) {
-        await navigator.clipboard.writeText(t.dataset.url);
+      if (t.classList.contains('sub-format')) {
+        setSubFormat(card, t.dataset.format || 'default');
+        return;
+      }
+      if (t.classList.contains('copy-btn') || t.classList.contains('sub-copy')) {
+        const url = getSubUrlFromCard(card);
+        await navigator.clipboard.writeText(url);
         toast('已复制');
         return;
       }
       if (t.classList.contains('sub-qrcode')) {
-        showSubQR(t.dataset.url || '');
+        showSubQR(getSubUrlFromCard(card));
         return;
       }
       if (t.classList.contains('sub-toggle')) {
