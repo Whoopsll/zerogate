@@ -48,7 +48,7 @@
     });
     location.hash = name;
     if (name === 'subs') loadSubs();
-    if (name === 'agents') { loadAgentSubOptions(); loadAgents(); }
+    if (name === 'agents') loadAgents();
     if (name === 'config') loadConfig();
     if (name === 'logs') loadLogs();
   }
@@ -196,22 +196,7 @@
     }
   });
 
-  // --- agents ---
-  async function loadAgentSubOptions() {
-    const sel = document.getElementById('agentSubId');
-    try {
-      const data = await api('/admin/sub-links.json');
-      const items = data.items || [];
-      sel.innerHTML = items.length
-        ? items.map(function (s) {
-          return '<option value="' + esc(s.id) + '">' + esc(s.name) + ' (' + esc(s.id.slice(0, 8)) + '…)</option>';
-        }).join('')
-        : '<option value="">请先创建订阅</option>';
-    } catch {
-      sel.innerHTML = '<option value="">加载失败</option>';
-    }
-  }
-
+  // --- agents（全公司共用一个）---
   function agentCard(a) {
     const rules = Array.isArray(a.allowRules) ? a.allowRules : [];
     return '<div class="card" data-id="' + esc(a.id) + '">'
@@ -220,7 +205,7 @@
       + '<span class="badge ' + (a.online ? 'ok' : 'off') + '">' + (a.online ? '在线' : '离线') + '</span> '
       + '<span class="badge ' + (a.enabled ? 'ok' : 'warn') + '">' + (a.enabled ? '启用' : '停用') + '</span></div>'
       + '</div>'
-      + '<p class="muted" style="font-size:0.85rem;margin-bottom:8px">订阅 ID: ' + esc(a.subscriptionId) + '</p>'
+      + '<p class="muted" style="font-size:0.85rem;margin-bottom:8px">所有订阅共用 · 内网只需运行一个 zerogate-agent</p>'
       + '<label class="field"><span>Agent Token（给内网 Go Agent）</span>'
       + '<div class="copy-row"><input readonly value="' + esc(a.agentToken) + '">'
       + '<button type="button" class="btn secondary sm copy-btn" data-url="' + esc(a.agentToken) + '">复制</button></div></label>'
@@ -237,11 +222,13 @@
 
   async function loadAgents() {
     const el = document.getElementById('agentList');
+    const createPanel = document.getElementById('agentCreatePanel');
     el.innerHTML = '<div class="empty">加载中…</div>';
     try {
       const data = await api('/admin/agents.json');
+      if (createPanel) createPanel.style.display = (data.items && data.items.length) ? 'none' : '';
       if (!data.items || !data.items.length) {
-        el.innerHTML = '<div class="empty">暂无 Agent，请在上方创建。</div>';
+        el.innerHTML = '<div class="empty">尚未创建公司 Agent，请在上方创建（只需一次）。</div>';
         return;
       }
       el.innerHTML = data.items.map(agentCard).join('');
@@ -251,8 +238,6 @@
   }
 
   document.getElementById('createAgent').addEventListener('click', async function () {
-    const subId = document.getElementById('agentSubId').value;
-    if (!subId) { toast('请选择订阅', 'error'); return; }
     const rulesText = document.getElementById('agentRules').value.trim();
     const allowRules = rulesText
       ? rulesText.split(/\n+/).map(function (l) { return l.trim(); }).filter(Boolean)
@@ -261,12 +246,11 @@
       await api('/admin/agents.json', {
         method: 'POST',
         body: {
-          subscriptionId: subId,
           name: document.getElementById('agentName').value.trim(),
           allowRules
         }
       });
-      toast('Agent 已创建');
+      toast('公司 Agent 已创建');
       loadAgents();
     } catch (e) {
       toast(e.message, 'error');
@@ -274,7 +258,6 @@
   });
 
   document.getElementById('refreshAgents').addEventListener('click', function () {
-    loadAgentSubOptions();
     loadAgents();
   });
 

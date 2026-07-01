@@ -29,7 +29,7 @@
         </div>
         <div class="hint">
           每个用户一条 <strong>VLESS WebSocket</strong> 订阅。用户导入 v2rayN 后连接 Worker；
-          访问<strong>私网 IP</strong>需绑定 Agent（Wrangler + DO 部署）。
+          访问<strong>私网 IP</strong>走公司共用的内网 Agent（只需部署一次）。
         </div>
         <div class="panel">
           <h3>创建订阅</h3>
@@ -57,16 +57,11 @@
           <button type="button" class="btn secondary sm" id="refreshAgents">刷新</button>
         </div>
         <div class="hint">
-          一订阅一 Agent。内网机器运行 Go Agent，用 <strong>agentToken</strong> 连接 <code>/agent</code>。
-          需 Worker 绑定 <strong>AGENT_HUB</strong> Durable Object（Wrangler 部署）。
+          <strong>全公司共用一个 Agent</strong>。内网只部署一份 zerogate-agent，所有用户的订阅访问私网 IP 均走此通道；新建订阅<strong>无需</strong>再建 Agent。
         </div>
-        <div class="panel">
-          <h3>创建 Agent</h3>
+        <div class="panel" id="agentCreatePanel">
+          <h3>创建公司 Agent（仅需一次）</h3>
           <div class="form-row">
-            <label class="field">
-              <span>绑定订阅</span>
-              <select id="agentSubId"><option value="">加载中…</option></select>
-            </label>
             <label class="field">
               <span>名称</span>
               <input type="text" id="agentName" placeholder="例如：公司内网">
