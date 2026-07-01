@@ -347,3 +347,54 @@ input[readonly] { opacity: 0.75; }
   .sidebar-footer { margin-top: 0; width: 100%; }
   .main { padding: 20px 16px; }
 }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.modal-overlay[hidden] { display: none; }
+
+.modal-box {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 24px 20px;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+}
+
+.modal-title { margin-bottom: 16px; font-weight: 600; }
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-close:hover { color: var(--text); }
+
+.qrcode-container {
+  display: inline-block;
+  padding: 12px;
+  background: #fff;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.qrcode-container img,
+.qrcode-container canvas { display: block; }

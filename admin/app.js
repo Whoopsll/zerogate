@@ -61,6 +61,43 @@
   showTab(['subs', 'agents', 'config', 'logs'].includes(hash) ? hash : 'subs');
 
   // --- subscriptions ---
+  function showSubQR(url) {
+    if (typeof QRCode === 'undefined') {
+      toast('二维码库加载失败', 'error');
+      return;
+    }
+    const modal = document.getElementById('qrcodeModal');
+    const container = document.getElementById('qrcodeContainer');
+    container.innerHTML = '';
+    let level = QRCode.CorrectLevel.H;
+    if (url.length > 1500) level = QRCode.CorrectLevel.M;
+    if (url.length > 2500) level = QRCode.CorrectLevel.L;
+    try {
+      new QRCode(container, {
+        text: url,
+        width: 260,
+        height: 260,
+        colorDark: '#000',
+        colorLight: '#fff',
+        correctLevel: level
+      });
+      modal.hidden = false;
+    } catch (err) {
+      toast('链接过长，无法生成二维码', 'error');
+    }
+  }
+
+  function closeSubQR() {
+    const modal = document.getElementById('qrcodeModal');
+    if (modal) modal.hidden = true;
+  }
+
+  document.getElementById('qrcodeClose')?.addEventListener('click', closeSubQR);
+  document.getElementById('qrcodeCloseBtn')?.addEventListener('click', closeSubQR);
+  document.getElementById('qrcodeModal')?.addEventListener('click', function (e) {
+    if (e.target.id === 'qrcodeModal') closeSubQR();
+  });
+
   function subCard(i) {
     const pct = Math.min(100, parseFloat(i.percent) || 0);
     return '<div class="card" data-id="' + esc(i.id) + '">'
@@ -71,6 +108,7 @@
       + '</div>'
       + '<div class="progress"><span style="width:' + pct + '%"></span></div>'
       + '<div class="copy-row"><input readonly value="' + esc(i.subUrl) + '">'
+      + '<button type="button" class="btn secondary sm sub-qrcode" data-url="' + esc(i.subUrl) + '">二维码</button>'
       + '<button type="button" class="btn secondary sm copy-btn" data-url="' + esc(i.subUrl) + '">复制</button></div>'
       + '<p class="muted" style="margin-top:8px;font-size:0.8rem">UUID: ' + esc(i.uuid) + ' · 账期 ' + esc(i.month) + '</p>'
       + '<div class="actions">'
@@ -126,6 +164,10 @@
       if (t.classList.contains('copy-btn')) {
         await navigator.clipboard.writeText(t.dataset.url);
         toast('已复制');
+        return;
+      }
+      if (t.classList.contains('sub-qrcode')) {
+        showSubQR(t.dataset.url || '');
         return;
       }
       if (t.classList.contains('sub-toggle')) {
