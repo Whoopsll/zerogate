@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>未设置管理员密码</title>
+  <link rel="stylesheet" href="/admin/style.css">
+</head>
+<body class="auth-page error-page">
+  <div class="auth-card">
+    <div class="auth-logo warn">!</div>
+    <h1>未设置管理员密码</h1>
+    <p>请在 Worker 环境变量中添加 <code>ADMIN</code>，然后重新部署。</p>
+    <p class="muted">Settings → Variables → 添加 ADMIN（纯文本或密钥）</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>管理后台 · VPN</title>
+  <link rel="stylesheet" href="/admin/style.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">VPN Admin</div>
+      <button type="button" class="nav-item active" data-tab="subs">📋 订阅管理</button>
+      <button type="button" class="nav-item" data-tab="agents">🔗 内网 Agent</button>
+      <button type="button" class="nav-item" data-tab="config">⚙️ 节点配置</button>
+      <button type="button" class="nav-item" data-tab="logs">📜 操作日志</button>
+      <div class="sidebar-footer">
+        <a href="/logout" class="nav-item">👋 退出登录</a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- 订阅 -->
+      <section id="tab-subs" class="tab-pane active">
+        <div class="page-header">
+          <h2>订阅管理</h2>
+          <button type="button" class="btn secondary sm" id="refreshSubs">刷新</button>
+        </div>
+        <div class="hint">
+          每个用户一条 <strong>VLESS WebSocket</strong> 订阅。用户导入 v2rayN 后连接 Worker；
+          访问<strong>私网 IP</strong>需绑定 Agent（Wrangler + DO 部署）。
+        </div>
+        <div class="panel">
+          <h3>创建订阅</h3>
+          <div class="form-row">
+            <label class="field">
+              <span>备注名称</span>
+              <input type="text" id="subName" placeholder="例如：张三">
+            </label>
+            <label class="field">
+              <span>月流量配额 (GB)</span>
+              <input type="number" id="subQuota" value="50" min="1" step="1">
+            </label>
+          </div>
+          <button type="button" class="btn primary" id="createSub" style="width:auto">创建订阅</button>
+        </div>
+        <div id="subList" class="card-list">
+          <div class="empty">加载中…</div>
+        </div>
+      </section>
+
+      <!-- Agent -->
+      <section id="tab-agents" class="tab-pane">
+        <div class="page-header">
+          <h2>内网 Agent</h2>
+          <button type="button" class="btn secondary sm" id="refreshAgents">刷新</button>
+        </div>
+        <div class="hint">
+          一订阅一 Agent。内网机器运行 Go Agent，用 <strong>agentToken</strong> 连接 <code>/agent</code>。
+          需 Worker 绑定 <strong>AGENT_HUB</strong> Durable Object（Wrangler 部署）。
+        </div>
+        <div class="panel">
+          <h3>创建 Agent</h3>
+          <div class="form-row">
+            <label class="field">
+              <span>绑定订阅</span>
+              <select id="agentSubId"><option value="">加载中…</option></select>
+            </label>
+            <label class="field">
+              <span>名称</span>
+              <input type="text" id="agentName" placeholder="例如：公司内网">
+            </label>
+          </div>
+          <label class="field">
+            <span>白名单 allowRules（每行一条，如 192.168.1.10:22 或 192.168.1.0/24:*）</span>
+            <textarea id="agentRules" rows="4" placeholder="192.168.1.10:22&#10;192.168.1.20:8080"></textarea>
+          </label>
+          <button type="button" class="btn primary" id="createAgent" style="width:auto">创建 Agent</button>
+        </div>
+        <div id="agentList" class="card-list">
+          <div class="empty">加载中…</div>
+        </div>
+      </section>
+
+      <!-- 配置 -->
+      <section id="tab-config" class="tab-pane">
+        <div class="page-header">
+          <h2>节点配置</h2>
+          <button type="button" class="btn secondary sm" id="resetConfig">重置默认</button>
+        </div>
+        <div class="panel">
+          <form id="configForm">
+            <div class="form-row">
+              <label class="field">
+                <span>HOST（节点域名）</span>
+                <input type="text" id="cfgHost" name="HOST">
+              </label>
+              <label class="field">
+                <span>PATH（WebSocket 路径）</span>
+                <input type="text" id="cfgPath" name="PATH" placeholder="/">
+              </label>
+            </div>
+            <div class="form-row">
+              <label class="field">
+                <span>订阅显示名称 SUBNAME</span>
+                <input type="text" id="cfgSubName" name="SUBNAME">
+              </label>
+              <label class="field">
+                <span>订阅更新间隔（小时）</span>
+                <input type="number" id="cfgSubUpdate" name="SUBUpdateTime" min="1">
+              </label>
+            </div>
+            <label class="field">
+              <span>管理员 UUID（只读，连接鉴权用）</span>
+              <input type="text" id="cfgUuid" readonly>
+            </label>
+            <button type="submit" class="btn primary" style="width:auto">保存配置</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- 日志 -->
+      <section id="tab-logs" class="tab-pane">
+        <div class="page-header">
+          <h2>操作日志</h2>
+          <button type="button" class="btn secondary sm" id="refreshLogs">刷新</button>
+        </div>
+        <div class="panel" style="overflow-x:auto">
+          <table class="log-table">
+            <thead>
+              <tr><th>时间</th><th>类型</th><th>IP</th><th>详情</th></tr>
+            </thead>
+            <tbody id="logBody">
+              <tr><td colspan="4" class="muted">加载中…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="/admin/app.js"></script>
+</body>
+</html>
