@@ -42,31 +42,42 @@ code {
   justify-content: center;
   min-height: 100vh;
   padding: 24px;
-  background: radial-gradient(ellipse at top, #1e2a3a 0%, var(--bg) 60%);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(246,130,31,.12) 0%, transparent 45%),
+    radial-gradient(circle at 80% 80%, rgba(250,171,65,.08) 0%, transparent 40%),
+    var(--bg);
 }
 
 .auth-card {
   width: 100%;
-  max-width: 400px;
-  background: var(--surface);
+  max-width: 420px;
+  background: linear-gradient(180deg, rgba(36,48,68,.95) 0%, rgba(26,35,50,.98) 100%);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 36px 32px;
-  box-shadow: 0 24px 48px rgba(0,0,0,.35);
+  border-radius: 20px;
+  padding: 40px 36px;
+  box-shadow: 0 32px 64px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.04) inset;
+}
+
+.auth-card h1 {
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
 }
 
 .auth-logo {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
   background: linear-gradient(135deg, var(--accent2), var(--accent));
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 18px;
+  font-size: 17px;
   color: #fff;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
+  box-shadow: 0 12px 28px rgba(246,130,31,.35);
+  letter-spacing: 0.05em;
 }
 
 .auth-logo.warn { background: linear-gradient(135deg, #ef4444, #b91c1c); font-size: 28px; }
